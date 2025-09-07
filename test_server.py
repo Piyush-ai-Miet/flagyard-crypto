@@ -10,6 +10,8 @@ import time
 def handle_client(client_socket):
     """Handle a client connection"""
     try:
+        client_socket.settimeout(30)  # Set timeout
+        
         # Send initial greeting
         greeting = """
 |  Menu:
@@ -27,6 +29,7 @@ def handle_client(client_socket):
                     break
                     
                 command = data.decode().strip().lower()
+                print(f"Received command: '{command}'")
                 
                 if command == 's':
                     # Send flag response with hex
@@ -40,23 +43,33 @@ def handle_client(client_socket):
 |
 |  > """
                     client_socket.send(flag_response.encode())
+                    print("Sent flag response")
                     
                 elif command == 'w':
-                    client_socket.send(b"|  [~] You turn your back to the river...\n")
+                    response = "|  [~] You turn your back to the river...\n"
+                    client_socket.send(response.encode())
+                    print("Sent goodbye response")
                     break
                 else:
-                    client_socket.send(b"|  [!] Invalid choice.\n|  > ")
+                    response = "|  [!] Invalid choice.\n|  > "
+                    client_socket.send(response.encode())
+                    print("Sent invalid choice response")
                     
             except socket.timeout:
+                print("Client timeout")
                 break
             except Exception as e:
-                print(f"Error handling client: {e}")
+                print(f"Error handling client command: {e}")
                 break
     
     except Exception as e:
         print(f"Client handler error: {e}")
     finally:
-        client_socket.close()
+        print("Closing client connection")
+        try:
+            client_socket.close()
+        except:
+            pass
 
 def start_test_server(port=9999):
     """Start the test server"""
